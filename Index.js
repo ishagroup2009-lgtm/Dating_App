@@ -110,6 +110,8 @@ const { Server } = require("socket.io");
 const cors = require("cors");
 const connectDB = require("./db");
 const Message = require("./models/Message");
+const multer = require("multer");
+const path = require("path");
 
 const app = express();
 
@@ -117,6 +119,39 @@ connectDB();
 
 app.use(cors());
 app.use(express.json());
+
+const storage = multer.diskStorage({
+
+    destination: (req, file, cb) => {
+        cb(null, "uploads/");
+    },
+
+    filename: (req, file, cb) => {
+        cb(
+            null,
+            Date.now() + path.extname(file.originalname)
+        );
+    },
+
+});
+
+const upload = multer({ storage });
+
+app.use("/uploads", express.static("uploads"));
+
+app.post(
+    "/upload-image",
+    upload.single("image"),
+    (req, res) => {
+
+        res.json({
+            status: true,
+            imageUrl:
+                `https://dating-app-cmwi.onrender.com/uploads/${req.file.filename}`,
+        });
+
+    }
+);
 
 
 // 🔥 TEST API
@@ -197,22 +232,24 @@ io.on("connection", (socket) => {
     });
 
 
-    // 🔹 SEND MESSAGE
+
+
     // socket.on("sendMessage", async ({ senderId, receiverId, message }) => {
+
+    //     console.log("MESSAGE EVENT HIT");
 
     //     try {
 
-    //         // ✅ SAVE MESSAGE
     //         const newMessage = await Message.create({
     //             senderId,
     //             receiverId,
     //             message,
     //         });
 
-    //         // ✅ RECEIVER SOCKET
+    //         console.log("MESSAGE SAVED:", newMessage);
+
     //         const receiverSocket = users[receiverId];
 
-    //         // ✅ REALTIME SEND
     //         if (receiverSocket) {
 
     //             io.to(receiverSocket).emit(
@@ -222,51 +259,62 @@ io.on("connection", (socket) => {
 
     //         }
 
-    //         // ✅ SENDER ALSO RECEIVE
     //         socket.emit("messageSent", newMessage);
 
     //     } catch (error) {
 
-    //         console.log("Send Message Error:", error);
+    //         console.log("SAVE ERROR:", error);
 
     //     }
 
     // });
 
-    socket.on("sendMessage", async ({ senderId, receiverId, message }) => {
 
-        console.log("MESSAGE EVENT HIT");
 
-        try {
 
-            const newMessage = await Message.create({
-                senderId,
-                receiverId,
-                message,
-            });
 
-            console.log("MESSAGE SAVED:", newMessage);
 
-            const receiverSocket = users[receiverId];
+    socket.on(
+        "sendMessage",
+        async ({
+            senderId,
+            receiverId,
+            message,
+            image,
+        }) => {
 
-            if (receiverSocket) {
+            try {
 
-                io.to(receiverSocket).emit(
-                    "receiveMessage",
-                    newMessage
-                );
+                const newMessage = await Message.create({
+                    senderId,
+                    receiverId,
+                    message,
+                    image,
+                });
+
+                const receiverSocket = users[receiverId];
+
+                if (receiverSocket) {
+
+                    io.to(receiverSocket).emit(
+                        "receiveMessage",
+                        newMessage
+                    );
+
+                }
+
+                socket.emit("messageSent", newMessage);
+
+            } catch (error) {
+
+                console.log("SAVE ERROR:", error);
 
             }
 
-            socket.emit("messageSent", newMessage);
-
-        } catch (error) {
-
-            console.log("SAVE ERROR:", error);
-
         }
+    );
 
-    });
+
 
 
     // 🔹 DISCONNECT
