@@ -198,21 +198,57 @@ io.on("connection", (socket) => {
 
 
     // 🔹 SEND MESSAGE
+    // socket.on("sendMessage", async ({ senderId, receiverId, message }) => {
+
+    //     try {
+
+    //         // ✅ SAVE MESSAGE
+    //         const newMessage = await Message.create({
+    //             senderId,
+    //             receiverId,
+    //             message,
+    //         });
+
+    //         // ✅ RECEIVER SOCKET
+    //         const receiverSocket = users[receiverId];
+
+    //         // ✅ REALTIME SEND
+    //         if (receiverSocket) {
+
+    //             io.to(receiverSocket).emit(
+    //                 "receiveMessage",
+    //                 newMessage
+    //             );
+
+    //         }
+
+    //         // ✅ SENDER ALSO RECEIVE
+    //         socket.emit("messageSent", newMessage);
+
+    //     } catch (error) {
+
+    //         console.log("Send Message Error:", error);
+
+    //     }
+
+    // });
+
     socket.on("sendMessage", async ({ senderId, receiverId, message }) => {
+
+        console.log("MESSAGE EVENT HIT");
 
         try {
 
-            // ✅ SAVE MESSAGE
             const newMessage = await Message.create({
                 senderId,
                 receiverId,
                 message,
             });
 
-            // ✅ RECEIVER SOCKET
+            console.log("MESSAGE SAVED:", newMessage);
+
             const receiverSocket = users[receiverId];
 
-            // ✅ REALTIME SEND
             if (receiverSocket) {
 
                 io.to(receiverSocket).emit(
@@ -222,12 +258,11 @@ io.on("connection", (socket) => {
 
             }
 
-            // ✅ SENDER ALSO RECEIVE
             socket.emit("messageSent", newMessage);
 
         } catch (error) {
 
-            console.log("Send Message Error:", error);
+            console.log("SAVE ERROR:", error);
 
         }
 
