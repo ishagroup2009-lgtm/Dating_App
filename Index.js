@@ -582,6 +582,209 @@ io.on("connection", (socket) => {
     }
   );
 
+  socket.on(
+    "acceptCall",
+
+    async ({
+      callerId,
+      receiverId,
+      callerToken,
+    }) => {
+
+      console.log(
+        "CALL ACCEPTED"
+      );
+
+      // SOCKET
+      const callerSocket =
+        users[callerId];
+
+      if (callerSocket) {
+
+        io.to(callerSocket).emit(
+          "callAccepted",
+          {
+            receiverId,
+          }
+        );
+
+      }
+
+      // FCM
+      try {
+
+        const message = {
+
+          notification: {
+            title: "Call Accepted",
+            body: "User accepted your call",
+          },
+
+          data: {
+            type: "call_accepted",
+            receiverId:
+              String(receiverId),
+          },
+
+          token: callerToken,
+
+        };
+
+        await admin
+          .messaging()
+          .send(message);
+
+        console.log(
+          "ACCEPT PUSH SENT"
+        );
+
+      } catch (error) {
+
+        console.log(
+          "ACCEPT PUSH ERROR",
+          error
+        );
+
+      }
+
+    }
+  );
+
+  socket.on(
+    "rejectCall",
+
+    async ({
+      callerId,
+      receiverId,
+      callerToken,
+    }) => {
+
+      console.log(
+        "CALL REJECTED"
+      );
+
+      // SOCKET
+      const callerSocket =
+        users[callerId];
+
+      if (callerSocket) {
+
+        io.to(callerSocket).emit(
+          "callRejected",
+          {
+            receiverId,
+          }
+        );
+
+      }
+
+      // FCM
+      try {
+
+        const message = {
+
+          notification: {
+            title: "Call Rejected",
+            body: "User rejected your call",
+          },
+
+          data: {
+            type: "call_rejected",
+            receiverId:
+              String(receiverId),
+          },
+
+          token: callerToken,
+
+        };
+
+        await admin
+          .messaging()
+          .send(message);
+
+        console.log(
+          "REJECT PUSH SENT"
+        );
+
+      } catch (error) {
+
+        console.log(
+          "REJECT PUSH ERROR",
+          error
+        );
+
+      }
+
+    }
+  );
+
+  socket.on(
+    "endCall",
+
+    async ({
+      callerId,
+      receiverId,
+      receiverToken,
+    }) => {
+
+      console.log(
+        "CALL ENDED"
+      );
+
+      // SOCKET
+      const receiverSocket =
+        users[receiverId];
+
+      if (receiverSocket) {
+
+        io.to(receiverSocket).emit(
+          "callEnded",
+          {
+            callerId,
+          }
+        );
+
+      }
+
+      // FCM
+      try {
+
+        const message = {
+
+          notification: {
+            title: "Call Ended",
+            body: "Call has ended",
+          },
+
+          data: {
+            type: "call_ended",
+            callerId:
+              String(callerId),
+          },
+
+          token: receiverToken,
+
+        };
+
+        await admin
+          .messaging()
+          .send(message);
+
+        console.log(
+          "END PUSH SENT"
+        );
+
+      } catch (error) {
+
+        console.log(
+          "END PUSH ERROR",
+          error
+        );
+
+      }
+
+    }
+  );
 
   // 👇 disconnect
   socket.on("disconnect", () => {
