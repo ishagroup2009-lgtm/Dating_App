@@ -504,6 +504,84 @@ io.on("connection", (socket) => {
     }
   );
 
+  socket.on(
+    "callUser",
+
+    async ({
+      callerId,
+      receiverId,
+      callerName,
+      callerToken,
+      receiverToken,
+    }) => {
+
+      console.log(
+        "VOICE CALL FROM:",
+        callerId,
+        "TO:",
+        receiverId
+      );
+
+      const receiverSocket =
+        users[receiverId];
+
+      // 👇 SOCKET EVENT
+      if (receiverSocket) {
+
+        io.to(receiverSocket).emit(
+          "incomingCall",
+          {
+            callerId,
+            callerName,
+            callerToken,
+          }
+        );
+
+      }
+
+      // 👇 FCM PUSH
+      try {
+
+        const message = {
+
+          notification: {
+            title: "Incoming Voice Call",
+            body: `${callerName} is calling you`,
+          },
+
+          data: {
+            type: "voice_call",
+            callerId: String(callerId),
+            callerName: String(callerName),
+            callerToken: String(callerToken),
+          },
+
+          token: receiverToken,
+
+        };
+
+        const response =
+          await admin
+            .messaging()
+            .send(message);
+
+        console.log(
+          "CALL NOTIFICATION SENT",
+          response
+        );
+
+      } catch (error) {
+
+        console.log(
+          "FCM ERROR",
+          error
+        );
+
+      }
+
+    }
+  );
+
 
   // 👇 disconnect
   socket.on("disconnect", () => {
