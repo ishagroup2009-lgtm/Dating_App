@@ -662,6 +662,7 @@ io.on("connection", (socket) => {
       callerId,
       receiverId,
       callerToken,
+      callerName
     }) => {
 
       console.log(
@@ -678,6 +679,7 @@ io.on("connection", (socket) => {
           "callAccepted",
           {
             receiverId,
+            callerName
           }
         );
 
@@ -690,7 +692,7 @@ io.on("connection", (socket) => {
 
           notification: {
             title: "Call Accepted",
-            body: "User accepted your call",
+            body: `${callerName} accepted your call`,
           },
 
           data: {
@@ -699,6 +701,7 @@ io.on("connection", (socket) => {
               String(receiverId),
             callerId: String(callerId),
             callerToken: String(callerToken),
+            callerName: String(callerName),
           },
 
           token: callerToken,
