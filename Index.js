@@ -624,6 +624,8 @@ io.on("connection", (socket) => {
             type: "call_accepted",
             receiverId:
               String(receiverId),
+            callerId: String(callerId),
+            callerToken: String(callerToken),
           },
 
           token: callerToken,
