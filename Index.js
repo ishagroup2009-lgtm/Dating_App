@@ -274,6 +274,10 @@ const admin = require("firebase-admin");
 const app = express();
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 connectDB();
+const {
+  RtcTokenBuilder,
+  RtcRole,
+} = require("agora-token");
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
@@ -344,6 +348,72 @@ app.post(
 
       console.log(
         "UPLOAD API ERROR",
+        error
+      );
+
+      res.status(500).json({
+        status: false,
+        message: error.message,
+      });
+
+    }
+
+  }
+);
+
+
+app.post(
+  "/generate-agora-token",
+
+  async (req, res) => {
+
+    try {
+
+      const { channelName, uid } = req.body;
+
+      // 👇 agora credentials
+      const appId =
+        "5585e4187e7c42a38f304f4c1bfae791";
+
+      const appCertificate =
+        "dd5d6d53050743c0bb675621453d9d7f";
+
+      const role =
+        RtcRole.PUBLISHER;
+
+      // 👇 token expiry
+      const expirationTimeInSeconds =
+        3600;
+
+      const currentTimestamp =
+        Math.floor(Date.now() / 1000);
+
+      const privilegeExpiredTs =
+        currentTimestamp +
+        expirationTimeInSeconds;
+
+      // 👇 token generate
+      const token =
+        RtcTokenBuilder.buildTokenWithUid(
+          appId,
+          appCertificate,
+          channelName,
+          Number(uid),
+          role,
+          privilegeExpiredTs
+        );
+
+      res.json({
+        status: true,
+        token,
+        channelName,
+        uid,
+      });
+
+    } catch (error) {
+
+      console.log(
+        "AGORA TOKEN ERROR",
         error
       );
 
