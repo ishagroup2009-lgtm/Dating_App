@@ -513,6 +513,7 @@ io.on("connection", (socket) => {
       callerName,
       callerToken,
       receiverToken,
+      image
     }) => {
 
       console.log(
@@ -534,6 +535,7 @@ io.on("connection", (socket) => {
             callerId,
             callerName,
             callerToken,
+            image,
           }
         );
 
@@ -554,6 +556,7 @@ io.on("connection", (socket) => {
             callerId: String(callerId),
             callerName: String(callerName),
             callerToken: String(callerToken),
+            image: String(image),
           },
 
           token: receiverToken,
