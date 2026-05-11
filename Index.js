@@ -864,6 +864,308 @@ io.on("connection", (socket) => {
     }
   );
 
+
+  // ================= VIDEO CALL =================
+
+  // 📞 VIDEO CALL
+  socket.on(
+    "videoCallUser",
+
+    async ({
+      callerId,
+      receiverId,
+      callerName,
+      callerToken,
+      receiverToken,
+      image
+    }) => {
+
+      console.log(
+        "VIDEO CALL FROM:",
+        callerId,
+        "TO:",
+        receiverId
+      );
+
+      const receiverSocket =
+        users[receiverId];
+
+      // SOCKET
+      if (receiverSocket) {
+
+        io.to(receiverSocket).emit(
+          "incomingVideoCall",
+          {
+            callerId,
+            callerName,
+            callerToken,
+            image,
+          }
+        );
+
+      }
+
+      // FCM
+      try {
+
+        const message = {
+
+          notification: {
+            title: "Incoming Video Call",
+            body: `${callerName} is video calling you`,
+          },
+
+          data: {
+            type: "video_call",
+            callerId: String(callerId),
+            callerName: String(callerName),
+            callerToken: String(callerToken),
+            image: String(image),
+          },
+
+          token: receiverToken,
+
+        };
+
+        const response =
+          await admin
+            .messaging()
+            .send(message);
+
+        console.log(
+          "VIDEO CALL NOTIFICATION SENT",
+          response
+        );
+
+      } catch (error) {
+
+        console.log(
+          "VIDEO CALL FCM ERROR",
+          error
+        );
+
+      }
+
+    }
+  );
+
+
+  // ✅ ACCEPT VIDEO CALL
+  socket.on(
+    "acceptVideoCall",
+
+    async ({
+      callerId,
+      receiverId,
+      callerToken,
+      callerName
+    }) => {
+
+      console.log(
+        "VIDEO CALL ACCEPTED"
+      );
+
+      const callerSocket =
+        users[callerId];
+
+      // SOCKET
+      if (callerSocket) {
+
+        io.to(callerSocket).emit(
+          "videoCallAccepted",
+          {
+            receiverId,
+            callerName
+          }
+        );
+
+      }
+
+      // FCM
+      try {
+
+        const message = {
+
+          notification: {
+            title: "Video Call Accepted",
+            body: `${callerName} accepted your video call`,
+          },
+
+          data: {
+            type: "video_call_accepted",
+            receiverId:
+              String(receiverId),
+            callerId: String(callerId),
+            callerToken: String(callerToken),
+            callerName: String(callerName),
+          },
+
+          token: callerToken,
+
+        };
+
+        await admin
+          .messaging()
+          .send(message);
+
+        console.log(
+          "VIDEO ACCEPT PUSH SENT"
+        );
+
+      } catch (error) {
+
+        console.log(
+          "VIDEO ACCEPT PUSH ERROR",
+          error
+        );
+
+      }
+
+    }
+  );
+
+
+  // ❌ REJECT VIDEO CALL
+  socket.on(
+    "rejectVideoCall",
+
+    async ({
+      callerId,
+      receiverId,
+      callerToken,
+    }) => {
+
+      console.log(
+        "VIDEO CALL REJECTED"
+      );
+
+      const callerSocket =
+        users[callerId];
+
+      // SOCKET
+      if (callerSocket) {
+
+        io.to(callerSocket).emit(
+          "videoCallRejected",
+          {
+            receiverId,
+          }
+        );
+
+      }
+
+      // FCM
+      try {
+
+        const message = {
+
+          notification: {
+            title: "Video Call Rejected",
+            body: "User rejected your video call",
+          },
+
+          data: {
+            type: "video_call_rejected",
+            receiverId:
+              String(receiverId),
+          },
+
+          token: callerToken,
+
+        };
+
+        await admin
+          .messaging()
+          .send(message);
+
+        console.log(
+          "VIDEO REJECT PUSH SENT"
+        );
+
+      } catch (error) {
+
+        console.log(
+          "VIDEO REJECT PUSH ERROR",
+          error
+        );
+
+      }
+
+    }
+  );
+
+
+  // 🔴 END VIDEO CALL
+  socket.on(
+    "endVideoCall",
+
+    async ({
+      callerId,
+      receiverId,
+      receiverToken,
+    }) => {
+
+      console.log(
+        "VIDEO CALL ENDED"
+      );
+
+      const receiverSocket =
+        users[receiverId];
+
+      // SOCKET
+      if (receiverSocket) {
+
+        io.to(receiverSocket).emit(
+          "videoCallEnded",
+          {
+            callerId,
+          }
+        );
+
+      }
+
+      // FCM
+      try {
+
+        const message = {
+
+          notification: {
+            title: "Video Call Ended",
+            body: "Video call has ended",
+          },
+
+          data: {
+            type: "video_call_ended",
+            callerId:
+              String(callerId),
+          },
+
+          token: receiverToken,
+
+        };
+
+        await admin
+          .messaging()
+          .send(message);
+
+        console.log(
+          "VIDEO END PUSH SENT"
+        );
+
+      } catch (error) {
+
+        console.log(
+          "VIDEO END PUSH ERROR",
+          error
+        );
+
+      }
+
+    }
+  );
+
+
+
   // 👇 disconnect
   socket.on("disconnect", () => {
 
