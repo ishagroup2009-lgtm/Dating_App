@@ -583,7 +583,8 @@ io.on("connection", (socket) => {
       callerName,
       callerToken,
       receiverToken,
-      image
+      image,
+      channelName
     }) => {
 
       console.log(
@@ -606,6 +607,7 @@ io.on("connection", (socket) => {
             callerName,
             callerToken,
             image,
+            channelName
           }
         );
 
@@ -627,6 +629,7 @@ io.on("connection", (socket) => {
             callerName: String(callerName),
             callerToken: String(callerToken),
             image: String(image),
+            channelName: String(channelName),
           },
 
           token: receiverToken,
@@ -877,7 +880,8 @@ io.on("connection", (socket) => {
       callerName,
       callerToken,
       receiverToken,
-      image
+      image,
+      channelName
     }) => {
 
       console.log(
@@ -900,6 +904,7 @@ io.on("connection", (socket) => {
             callerName,
             callerToken,
             image,
+            channelName,
           }
         );
 
@@ -921,6 +926,7 @@ io.on("connection", (socket) => {
             callerName: String(callerName),
             callerToken: String(callerToken),
             image: String(image),
+            channelName: String(channelName),
           },
 
           token: receiverToken,
